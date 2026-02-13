@@ -2,7 +2,7 @@ import time, random, re
 from langchain_google_genai._common import GoogleGenerativeAIError
 
 class RPMLimiter:
-    """Limiteaza la max_rpm apeluri / minut (sequential)."""
+    """Limits to max_rpm calls per minute (sequentially)"""
     def __init__(self, max_rpm: int):
         self.min_interval = 60.0 / max_rpm
         self._last = 0.0
@@ -25,8 +25,8 @@ def _extract_retry_seconds(msg: str) -> float | None:
 
 def call_with_retry(fn, *args, limiter=None, max_retries=8, base_delay=2.0, max_delay=60.0, **kwargs):
     """
-    - limiter.wait() inainte de fiecare apel (throttle)
-    - pe 429/RESOURCE_EXHAUSTED: asteapta si reincearca
+    - limiter.wait() before each request (throttling)
+    - on 429/RESOURCE_EXHAUSTED: wait and retry
     """
     for attempt in range(max_retries):
         try:
@@ -44,4 +44,4 @@ def call_with_retry(fn, *args, limiter=None, max_retries=8, base_delay=2.0, max_
                 time.sleep(retry_s)
                 continue
             raise  
-    raise RuntimeError("Prea multe retry-uri (rate limit).")
+    raise RuntimeError("Too many retries (rate limit).")
